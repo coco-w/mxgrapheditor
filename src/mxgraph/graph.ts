@@ -62,6 +62,7 @@ class MyGraph extends mxGraph {
     height: string
     id: string
   }) => void
+  beforeDeleteCell?: (cell: typeMxCell) => boolean
   // menuClick?:()
   constructor(container: HTMLElement) {
     super(container)
@@ -433,22 +434,18 @@ class MyGraph extends mxGraph {
     return cell
   }
   deleteCells(cells: typeMxCell[]) {
-    const model = this.getModel()
-    model.beginUpdate()
-    try {
-      if (cells.length > 0) {
-        for (let i = 0; i < cells.length; i++) {
-          const ele = cells[i]
-          model.remove(ele)
+    if (cells.length > 0) {
+      for (let i = 0; i < cells.length; i++) {
+        const ele = cells[i]
+        let flag = true
+        if (this.beforeDeleteCell) {
+          flag = this.beforeDeleteCell(ele)
+        }
+        if (flag) {
+          this.removeCells([ele])
           this.handleDeleteCell && this.handleDeleteCell(ele)
         }
       }
-      this.fireEvent(
-        new mx.mxEventObject("cellsDelete", "cells", cells),
-        undefined
-      )
-    } finally {
-      model.endUpdate()
     }
   }
   findById(id: string) {

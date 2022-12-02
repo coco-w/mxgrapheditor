@@ -1,24 +1,25 @@
 <template>
-  <Sidebar :graph="graph" @change-edge="handleChangeEdge" :importDataType="props.importDataType" />
-  <div class="container">
-
-  </div>
+  <Sidebar
+    :graph="graph"
+    @change-edge="handleChangeEdge"
+    :importDataType="props.importDataType"
+  />
+  <div class="container"></div>
   <div id="outlineContainer" />
-
 </template>
 
 <script setup lang="ts">
-import { mxCell, mxPopupMenuHandler } from 'mxgraph';
-import { inject, onMounted, ref, Ref, shallowRef, watch } from 'vue'
-import MyGraph from './graph'
-import './defaultConfig'
-import { transfromEdge, transfromNode } from './transfrom';
-import { NodeConfig } from './type/node';
-import mx from './factory'
-import Sidebar from './siderbar.vue';
-import { message } from 'ant-design-vue';
-import { ImportData } from './type/sidebar';
-import { EdgeStructure, ListImpl, NodeStructure } from './type/type';
+import { mxCell, mxPopupMenuHandler } from "mxgraph"
+import { inject, onMounted, ref, Ref, shallowRef, watch } from "vue"
+import MyGraph from "./graph"
+import "./defaultConfig"
+import { transfromEdge, transfromNode } from "./transfrom"
+import { NodeConfig } from "./type/node"
+import mx from "./factory"
+import Sidebar from "./siderbar.vue"
+import { message } from "ant-design-vue"
+import { ImportData } from "./type/sidebar"
+import { EdgeStructure, ListImpl, NodeStructure } from "./type/type"
 
 const props = defineProps<{
   menu?: (cells: mxCell[], menu: mxPopupMenuHandler) => void
@@ -27,12 +28,24 @@ const props = defineProps<{
   importDataType?: ImportData[]
   handles?: {
     handlecellRightClick?: (cells: mxCell[], menu: mxPopupMenuHandler) => void
-    handleAddVertex?: (cell: mxCell, x: number, y: number, target: mxCell) => void
+    handleAddVertex?: (
+      cell: mxCell,
+      x: number,
+      y: number,
+      target: mxCell
+    ) => void
     handleDeleteCell?: (cell: mxCell) => void
     handleAddEdge?: (cell: mxCell) => void
     handleDropIn?: (target: mxCell, cells: mxCell[]) => void
     handleDropOut?: (target: mxCell, cells: mxCell[]) => void
-    handleSizeChange?: (props: {x: string, y: string, width: string, height: string, id: string}) => void
+    handleSizeChange?: (props: {
+      x: string
+      y: string
+      width: string
+      height: string
+      id: string
+    }) => void
+    beforeDeleteCell?: (cell: mxCell) => boolean
   }
   getData: (id: string) => Promise<{
     nodes: ListImpl<NodeStructure>
@@ -41,16 +54,18 @@ const props = defineProps<{
   }>
 }>()
 const emits = defineEmits<{
-  (e: 'load'): void
+  (e: "load"): void
 }>()
-const categoryId = inject<Readonly<Ref<string>>>('categoryId', ref(''))
-const wrapperId = inject<Readonly<Ref<string>>>('wrapperId', ref(''))
-const viewId = inject<Readonly<Ref<string>>>('viewId', ref(''))
+const categoryId = inject<Readonly<Ref<string>>>("categoryId", ref(""))
+const wrapperId = inject<Readonly<Ref<string>>>("wrapperId", ref(""))
+const viewId = inject<Readonly<Ref<string>>>("viewId", ref(""))
 const graph = shallowRef<MyGraph>()
 // mx.mxEditor.prototype.graph = new MyGraph()
 onMounted(() => {
   const editor = new mx.mxEditor()
-  editor.graph = new MyGraph(document.querySelector('.container') as HTMLElement)
+  editor.graph = new MyGraph(
+    document.querySelector(".container") as HTMLElement
+  )
   graph.value = editor.graph as MyGraph
   graph.value.cellRightClick = props.menu
   graph.value.nodeProps = props.nodeProps
@@ -61,10 +76,14 @@ onMounted(() => {
   graph.value.handleAddVertex = props.handles?.handleAddVertex
   graph.value.handleDropOut = props.handles?.handleDropOut
   graph.value.handleSizeChange = props.handles?.handleSizeChange
+  graph.value.beforeDeleteCell = props.handles?.beforeDeleteCell
   graph.value._init()
   window.graph = graph.value
   getData(wrapperId.value)
-  new mx.mxOutline(graph.value, document.querySelector('#outlineContainer') as HTMLElement,)
+  new mx.mxOutline(
+    graph.value,
+    document.querySelector("#outlineContainer") as HTMLElement
+  )
 })
 
 watch(props, () => {
@@ -89,23 +108,22 @@ const getData = async (id: string) => {
 
   if (graph.value) {
     graph.value.createEdgeStatus = true
-    combos.records.forEach(ele => {
+    combos.records.forEach((ele) => {
       const cfg = transfromNode(ele)
       graph.value?.insertVertetByConfig(cfg)
     })
-    nodes.records.forEach(ele => {
+    nodes.records.forEach((ele) => {
       const cfg = transfromNode(ele)
       graph.value?.insertVertetByConfig(cfg)
     })
-    edges.records.forEach(ele => {
+    edges.records.forEach((ele) => {
       const cfg = transfromEdge(ele, graph.value as MyGraph)
       if (cfg) graph.value?.insertEdgeByConfig(cfg)
     })
     graph.value?.center()
     graph.value.createEdgeStatus = false
-    emits('load')
+    emits("load")
   }
-
 }
 
 const handleChangeEdge = (edge: mxCell, id: string) => {
@@ -119,14 +137,14 @@ const handleChangeEdge = (edge: mxCell, id: string) => {
   }
 }
 defineExpose({
-  graph: graph
+  graph: graph,
 })
 </script>
 
 <style scoped lang="less">
 .container {
   width: calc(100% - 150px);
-  height: 100%
+  height: 100%;
 }
 
 #outlineContainer {
@@ -194,7 +212,7 @@ div.mxRubberband {
   overflow: hidden;
   border-style: solid;
   border-width: 1px;
-  border-color: #0000FF;
-  background: #0077FF;
+  border-color: #0000ff;
+  background: #0077ff;
 }
 </style>
